@@ -1,0 +1,10 @@
+
+TODO:
+    - use namespace for the project
+    - use namespace for common Utils
+    - cross-platform support for the functions/utils
+
+Utils dir for common utility functions:
+    - fileOp: for common file operations
+    - socketOp: for socket operations
+    - use namespace for common stateless functions?
