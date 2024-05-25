@@ -6,14 +6,29 @@ receives any change from its client.
 - Bonus 1: Optimise data transfer by avoiding uploading the same file multiple times.
 - Bonus 2: Optimise data transfer by avoiding uploading the same partial files (files sharing partially the same content) multiple times.
   - https://sourceforge.net/p/syncpath/code/HEAD/tree/trunk/main.cpp#l219
+  - https://github.com/rgmann/coral/tree/master/src/common/rsync
+  - https://rsync.samba.org/tech_report/node2.html
+  - https://rsync.samba.org/tech_report/
+  - https://github.com/librsync/librsync/
+  - endianness:
+    - https://habr.com/en/articles/779176/
+  - json
+    - https://www.space-research.org/blog/lib_netsockets.html
+  - sendfile
+    - https://www.reddit.com/r/C_Programming/comments/15nwpve/getting_segfaults_when_transferring_large_files/
+    - https://pastebin.com/4kHr94LE
+    - https://pastebin.com/wbw05PPW
+    - https://medium.com/swlh/linux-zero-copy-using-sendfile-75d2eb56b39b
+  - https://github.com/pedro-vicente/lib_netsockets
+
+
+- Checking:
+  - Check filesize and available disk-space:
+    However! You should consider first passing the size of the file, as a good practice. This would allow your client to anticipate exactly how much data is coming through the socket, figure out if (for example) there is enough disk space, etc. It allows you to have some sort of sanity-checking before committing to downloading whatever the server tries to send.
+
 
 ## Assumption
-- Two teams can have only one running match unless the game is differentiated by home and away basis, i.e.
-    - if Norway(home):Spain(away) is already running, then
-      - then a new match Norway(home):Spain(away) cannot be started,
-      - but Spain(home):Norway(away) can be started
-- Start time of a game is automatically initialized, no need to provide start time manually
-- There is no end time of a game unless a call is maded to end the game
+- 
 
 </br>
 

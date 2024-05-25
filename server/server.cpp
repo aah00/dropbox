@@ -6,8 +6,17 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <dirent.h>
+#include <deque>
+#include <sys/stat.h>
+#include <json.hpp>
+
+// #include <regex>
+
+#include <fileop.h>
 
 using namespace std;
+using json = nlohmann::json;
 
 class Server_socket{
     fstream file;
@@ -20,8 +29,18 @@ class Server_socket{
     struct sockaddr_in address;
     int address_length;
 
+    struct TFileInfo
+    {
+        std::string     name,wholePath;
+        time_t          accessTime,modTime;
+        bool            isDir, isSymLink;
+    };
+
+    typedef deque<TFileInfo> TDirListing;
+
     public:
-        Server_socket(){
+        Server_socket()
+        {
             create_socket();
             PORT = 8050;
 
@@ -45,7 +64,8 @@ class Server_socket{
             }
         }
 
-        void create_socket(){
+        void create_socket()
+        {
             if ((general_socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
                 perror("[ERROR] : Socket failed");
                 exit(EXIT_FAILURE);
@@ -53,7 +73,8 @@ class Server_socket{
             cout<<"[LOG] : Socket Created Successfully.\n";
         }
 
-        void bind_socket(){
+        void bind_socket()
+        {
             if (bind(general_socket_descriptor, (struct sockaddr *)&address, sizeof(address))<0) {
                 perror("[ERROR] : Bind failed");
                 exit(EXIT_FAILURE);
@@ -61,7 +82,8 @@ class Server_socket{
             cout<<"[LOG] : Bind Successful.\n";
         }
 
-        void set_listen_set(){
+        void set_listen_set()
+        {
             if (listen(general_socket_descriptor, 3) < 0) {
                 perror("[ERROR] : Listen");
                 exit(EXIT_FAILURE);
@@ -69,7 +91,8 @@ class Server_socket{
             cout<<"[LOG] : Socket in Listen State (Max Connection Queue: 3)\n";
         }
 
-        void accept_connection(){
+        void accept_connection()
+        {
             if ((new_socket_descriptor = accept(general_socket_descriptor, (struct sockaddr *)&address, (socklen_t*)&address_length))<0) { 
                 perror("[ERROR] : Accept");
                 exit(EXIT_FAILURE);
@@ -77,32 +100,58 @@ class Server_socket{
             cout<<"[LOG] : Connected to Client.\n";
         }
 
-        // void transmit_file(){
-        //     std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        //     cout<<"[LOG] : Transmission Data Size "<<contents.length()<<" Bytes.\n";
+        void receive_file()
+        {
+            char filename[255];
+            char buffer[1024];
+            char json_stream[1024];
+            size_t file_size = 218;
 
-        //     cout<<"[LOG] : Sending...\n";
+            int valread;
 
-        //     int bytes_sent = send(new_socket_descriptor , contents.c_str() , contents.length() , 0 );
-        //     cout<<"[LOG] : Transmitted Data Size "<<bytes_sent<<" Bytes.\n";
+            valread = read(new_socket_descriptor, filename, sizeof filename);
+            cout<<"\n[LOG] : Received json obj size: "<< valread << std::endl;
+            cout<<"[LOG] : Received filename \""<< filename << std::endl;
+                
+            valread = read(new_socket_descriptor, &file_size, sizeof file_size);
+            cout<<"\n[LOG] : Received json obj size: "<< valread << std::endl;
+            cout<<"[LOG] : Size of file: "<< (int) file_size <<" bytes\n";
 
-        //     cout<<"[LOG] : File Transfer Complete.\n";
-        // }
-
-        void receive_file(){
-            char buffer[1024] = {};
-            int valread = read(new_socket_descriptor , buffer, 1024);
-            cout<<"[LOG] : Data received "<<valread<<" bytes\n";
+            valread = read(new_socket_descriptor, buffer, sizeof buffer);
+            cout<<"\n[LOG] : Received json obj size: "<< valread << std::endl;
             cout<<"[LOG] : Saving data to file.\n";
-            
-            file<<buffer;
+            file << buffer;
             cout<<"[LOG] : File Saved.\n";
+
+            valread = read(new_socket_descriptor, json_stream, sizeof json_stream);
+            cout<<" \n[LOG] : Received json obj size: "<< valread << std::endl;
+            json_stream[valread]= '\0';
+            std::string tmp_str(json_stream);
+            cout<<"[LOG] : Received stream string: "<< json_stream << std::endl;
+
+            dropbox::TDirListing d_tree;
+            dropbox::scanDir("./test_dir", d_tree);
+            for (const auto &item: d_tree)
+            {
+                std::cout << item.name << std::endl;
+                std::cout << item.accessTime << std::endl;
+                std::cout << item.modTime << std::endl;
+                std::cout << std::endl;
+            }
+
+            memset(buffer, 1024, 0);
+            memset(filename, 255, 0);
+            memset(json_stream, 1024, 0);
+        }
+
+        void synchronizeDir(std::string flolder_name)
+        {
         }
 };
 
-int main(){
+int main()
+{
     Server_socket S;
-    // S.transmit_file();
     S.receive_file();
     return 0;
 }
