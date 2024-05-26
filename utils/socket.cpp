@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 Socket::Socket(std::string ip_addr, int port)
             : ip_addr(ip_addr)
@@ -24,4 +25,9 @@ Socket::Socket(std::string ip_addr, int port)
     {
         std::cerr << "[ERROR] : Invalid address!" << std::endl;
     }
+}
+
+void Socket::closeSocket()
+{
+    close(sock);
 }

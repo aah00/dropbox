@@ -47,5 +47,7 @@ namespace dropbox
 
     json scanDir(std::string dir_name);
 
+    bool createDirectory(const std::string &path);
+
 
 } // End of namespace dropbox

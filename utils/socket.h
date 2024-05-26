@@ -15,4 +15,5 @@ protected:
 
 public:
     Socket(std::string ip_addr, int port);
+    void closeSocket();
 };

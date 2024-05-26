@@ -1,23 +1,11 @@
 
 #include <fileop.h>
-#include <utime.h>
 #include <unistd.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <queue>
 #include <iostream>
-#include <cstdio>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <iostream>
-#include <ctime>
 #include <sys/types.h>
-#include <cerrno>
-#include <sys/stat.h>
 #include <dirent.h>
-
 
 #define _access access
 #define _rmdir rmdir
@@ -38,7 +26,6 @@ json dropbox::scanDir(std::string dir_name)
     do {
         while((dp = readdir(dirp)) != nullptr)
         {
-            std::cout << "\nReading new file" << std::endl;
             json obj;
             std::string d_name = dp->d_name;
             if(d_name != "." && d_name != "..")
@@ -143,4 +130,15 @@ bool dropbox::isSameFile(const std::string &f1)
     //     std::ctime(&fileInfo1.st_ctime);         // Creation time
     // std::cout << "Modified      : " <<
     //     std::ctime(&fileInfo1.st_mtime);         // Last mod time
+}
+
+// ---------------------------------------------------------------------
+// Creates a new directory (does not fail if if already exists) 
+//  In linux, the directory is created with RWX permisions for everyone 
+//  Returns true on success, false on error.
+// ---------------------------------------------------------------------
+bool dropbox::createDirectory(const std::string &path)
+{
+    if ( dropbox::pathExists( path ) )	return true;
+    return (0 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO));
 }
