@@ -20,6 +20,8 @@ receives any change from its client.
     - https://pastebin.com/wbw05PPW
     - https://medium.com/swlh/linux-zero-copy-using-sendfile-75d2eb56b39b
   - https://github.com/pedro-vicente/lib_netsockets
+  - JSON DIFF
+    - https://json.nlohmann.me/api/basic_json/diff/#notes
 
 
 - Checking:
