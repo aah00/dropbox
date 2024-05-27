@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(BINARY ${CMAKE_PROJECT_NAME}_test)
 
 file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)

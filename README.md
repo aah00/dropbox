@@ -1,5 +1,9 @@
-Github:
-https://github.com/Eric-Jalal/cpp-pipeline
+## Project Repo:
+- https://github.com/aah00/dropbox
+
+## Github:
+- https://github.com/Eric-Jalal/cpp-pipeline
+
 
 # Dropbox
 - A simple command line client which takes one directory (the source) as argument,
@@ -36,6 +40,10 @@ receives any change from its client.
 - Cannot support multiple clients 
 - Not suitable for large files
 - Not monitoring the changes on regular interval
+
+## Log Support
+- https://www.geeksforgeeks.org/logging-system-in-cpp/
+- https://drdobbs.com/cpp/logging-in-c/201804215
 
 
 ## Solution
