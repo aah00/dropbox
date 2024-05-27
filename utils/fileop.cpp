@@ -18,46 +18,81 @@ using json = nlohmann::json;
 json dropbox::scanDir2(std::string dir_name)
 {
     DIR *dirp;
-    if ((dirp = opendir(dir_name.c_str())) == NULL) {
+    if ((dirp = opendir(dir_name.c_str())) == NULL)
+    {
         std::cerr << "couldn't open " << dir_name << std::endl;
         return false;
     }
 
     json obj;
     struct dirent *dp;
-    auto server_dir = json::array();
-    // do {
-        while((dp = readdir(dirp)) != nullptr)
+    while((dp = readdir(dirp)) != nullptr)
+    {
+        std::string d_name = dp->d_name;
+        if(d_name != "." && d_name != "..")
         {
-            std::string d_name = dp->d_name;
-            if(d_name != "." && d_name != "..")
+            json property;
+            struct stat statDat;
+            char full_path[MAX_PATH_LENGTH];
+            sprintf(full_path,"%s/%s/%s", get_current_dir_name(), dir_name.c_str(), d_name.c_str());
+            if (stat(full_path, &statDat) != 0)
             {
-                json property;
-                struct stat statDat;
-                char full_path[MAX_PATH_LENGTH];
-                sprintf(full_path,"%s/%s/%s", get_current_dir_name(), dir_name.c_str(), d_name.c_str());
-                if (stat(full_path, &statDat) != 0)
-                {
-                    closedir(dirp);
-                    return false;
-                }
-                property["full_path"] = full_path;
-                property["mod_time"] = statDat.st_mtime;
-                property["access_time"] = statDat.st_atime;
-                property["size"] = statDat.st_size;
-                property["is_dir"] = (0 != (statDat.st_mode & 0x4000));
-                property["is_symlink"] = false;
-                obj[d_name] = property;
-                // server_dir.push_back(obj);
+                closedir(dirp);
+                return false;
             }
+            property["full_path"] = full_path;
+            property["mod_time"] = statDat.st_mtime;
+            property["access_time"] = statDat.st_atime;
+            property["size"] = statDat.st_size;
+            property["is_dir"] = (0 != (statDat.st_mode & 0x4000));
+            property["is_symlink"] = false;
+            property["sync_op"] = FileOP::ADD;
+            obj[d_name] = property;
         }
-    // } while (dp != nullptr);
-
+    }
     closedir(dirp);
 
-    std::cout << "OBJECT = " << obj.dump() << std::endl;
-
     return obj;
+}
+
+// ---------------------------------------------------------------
+//  isDirectory
+// ---------------------------------------------------------------
+bool isDirectory( const std::string &fileName)
+{
+    struct stat statDat;
+    if (stat(fileName.c_str(), &statDat))
+    {
+        // exitProgram(-1);
+        return false;
+    }
+
+    return (0 !=(statDat.st_mode & 0x4000));
+}
+
+// ---------------------------------------------------------------
+//  deleteFileOrDir - Deletes a file/empty-dir
+//  Returns true on success, false on error.
+// ---------------------------------------------------------------
+bool deleteFileOrDir(const std::string &filename)
+{
+    try
+    {
+        if (isDirectory( filename ))
+        {
+            _rmdir(filename.c_str());
+        }
+        else
+        {
+            remove(filename.c_str());
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+    return true;
 }
 
 
@@ -130,7 +165,7 @@ bool dropbox::scanDir(std::string dir_name, ListFileStat &d_tree)
                     return false;
                 }
                 newEntry.full_path = auxStr;
-                newEntry.modification_time    = statDat.st_mtime;
+                newEntry.modification_time = statDat.st_mtime;
                 newEntry.access_time = statDat.st_atime;
                 newEntry.size = statDat.st_size;
                 newEntry.is_dir = (0 != (statDat.st_mode & 0x4000));
@@ -152,34 +187,6 @@ bool dropbox::pathExists(const std::string &path)
     return 0 == _access(path.c_str(), 0x00); // 0x00 = Check for existence only!
 }
 
-// bool dropbox::isSameFile(const std::string &f1, const std::string &f2)
-bool dropbox::isSameFile(const std::string &f1)
-{
-    struct stat fileInfo1, fileInfo2;
-
-    if (stat(f1.c_str(), &fileInfo1) != 0)
-    {   // Use stat() to get the info
-        std::cerr << "Error: file1 info error!!" << std::endl;
-        return false;
-    }
-
-    std::cout << "Type:         : ";
-    if ((fileInfo1.st_mode & S_IFMT) == S_IFDIR) { // From sys/types.h
-        std::cout << "Directory\n";
-    } else {
-        std::cout << "File\n";
-    }
-
-    // std::cout << "Size          : " <<
-    //     fileInfo1.st_size << '\n';               // Size in bytes
-    // std::cout << "Device        : " <<
-    //   (char)(fileInfo1.st_dev + 'A') << '\n';  // Device number
-    // std::cout << "Created       : " <<
-    //     std::ctime(&fileInfo1.st_ctime);         // Creation time
-    // std::cout << "Modified      : " <<
-    //     std::ctime(&fileInfo1.st_mtime);         // Last mod time
-}
-
 // ---------------------------------------------------------------------
 // Creates a new directory (does not fail if if already exists) 
 //  In linux, the directory is created with RWX permisions for everyone 
@@ -187,7 +194,10 @@ bool dropbox::isSameFile(const std::string &f1)
 // ---------------------------------------------------------------------
 bool dropbox::createDirectory(const std::string &path)
 {
-    if ( dropbox::pathExists( path ) )	return true;
+    if (dropbox::pathExists(path))
+    {
+        return true;
+    }
     return (0 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO));
 }
 
@@ -227,3 +237,26 @@ bool dropbox::write(std::string file_name, const json& obj)
 
     return true;
 }
+
+bool dropbox::sync_op(std::string file, FileOP op, std::string content)
+{
+    switch (op)
+    {
+        case FileOP::ADD:
+        {
+            std::cout << "Creating a file or directory!" << std::endl;
+            return dropbox::write(file, content);
+        }
+        case FileOP::REMOVE:
+        {
+            std::cout << "Removing a file or directory" << std::endl;
+            return deleteFileOrDir(file);
+        }
+        default:
+        {
+            std::cout << "\n\nTHIS WILL NOT OCCUR!" << std::endl;
+        }
+    }
+    return false;
+}
+

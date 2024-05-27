@@ -8,15 +8,15 @@ using json = nlohmann::json;
 using namespace dropbox;
 
 
-bool synchronizeDir(ClientSocket &c, json target_state)
+bool synchronizeDir(ClientSocket &c, json &target_state)
 {
     std::cout << "******************************************" << std::endl;
     try
     {
-        for (const auto& item : target_state.items())
+        for (auto& item : target_state.items())
         {
             json updated_obj;
-            json property = item.value();
+            json &property = item.value();
             if (property["is_dir"] == false)
             {
                 fstream file;
@@ -35,7 +35,9 @@ bool synchronizeDir(ClientSocket &c, json target_state)
             updated_obj[item.key()] = property;
             std::string data_sent = updated_obj.dump();
             c.send_to(data_sent.c_str(), data_sent.length());
+            property["sync_op"] = FileOP::REMOVE;
         }
+        std::cout << target_state.dump() << std::endl;
     }
     catch(const std::exception& e)
     {
@@ -298,7 +300,7 @@ int main(int argc, char *argv[])
     if (synchronizeDir(sock_client, changes))
     {
         std::string file_name = dir_name + "/status.json";
-        dropbox::write(file_name, file_list);
+        dropbox::write(file_name, changes);
     }
 
     // Disconnect from the server

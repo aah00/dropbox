@@ -10,6 +10,13 @@ namespace dropbox
 {
     using json = nlohmann::json;
 
+    enum FileOP
+    {
+        NOOP,
+        ADD,
+        REMOVE
+    };
+
     struct FileStat
     {
         std::string name;
@@ -54,6 +61,8 @@ namespace dropbox
     bool write(std::string file_name, const json& obj);
     
     json scanDir2(std::string dir_name);
+
+    bool sync_op(std::string file, FileOP op, std::string content = "");
 
 
 } // End of namespace dropbox

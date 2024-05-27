@@ -38,25 +38,21 @@ int main(int argc, char *argv[])
             content_size = s.receive_from(client_dp, content, sizeof content);
             if (content_size > 0)
             {
-                std::cout << "Received content: \n";
+                std::cout << "Server Received content: \n";
                 std::cout << content << std::endl;
                 try
                 {
                     auto j = json::parse(content);
                     for (const auto& cur : j.items())
                     {
-                        std::cout << "Current key: " << cur.key() << std::endl;
                         std::string fname = cur.key();
                         if(cur.value()["is_dir"] == false)
                         {
-                            std::ofstream outfile ("dest_dir/" + fname);
-                            outfile << cur.value()["content"] << std::endl;
-                            outfile.close();
+                            dropbox::sync_op("dest_dir/" + fname, cur.value()["sync_op"], cur.value()["content"]);
                         }
                         else
                         {
-                            dropbox::createDirectory("dest_dir/" + fname);
-                            std::cout << fname << " is a directory!" << std::endl;
+                            dropbox::sync_op("dest_dir/" + fname, cur.value()["sync_op"]);
                         }
                     }
                 }
