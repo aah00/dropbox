@@ -7,5 +7,8 @@ set(BINARY client)
 
 add_executable(${BINARY} client.cpp)
 target_link_libraries(${BINARY} PRIVATE utilsLib)
+
+add_library(ClientLib STATIC client.cpp) # Can also be "SHARED"
+target_include_directories(ClientLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../utils/)
 # target_sources(${BINARY} PRIVATE ${other_SRC})
 

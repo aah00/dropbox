@@ -7,3 +7,6 @@ set(BINARY server)
 
 add_executable(${BINARY} server.cpp)
 target_link_libraries(${BINARY} PUBLIC utilsLib)
+
+add_library(ServerLib STATIC server.cpp) # Can also be "SHARED"
+target_include_directories(ServerLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../utils/)

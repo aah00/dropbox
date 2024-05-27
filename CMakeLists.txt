@@ -11,3 +11,8 @@ project(Dropbox C CXX)
 add_subdirectory(utils)
 add_subdirectory(server)
 add_subdirectory(client)
+
+
+enable_testing()
+add_subdirectory(test_client)
+add_subdirectory(test_integration)
