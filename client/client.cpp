@@ -10,7 +10,6 @@ using namespace dropbox;
 
 bool synchronizeDir(ClientSocket &c, json &target_state)
 {
-    std::cout << "******************************************" << std::endl;
     try
     {
         for (auto& item : target_state.items())
@@ -46,47 +45,6 @@ bool synchronizeDir(ClientSocket &c, json &target_state)
     }
     return true;
 }
-
-// bool synchronizeDir(ClientSocket &c, json target_state)
-// {
-//     try
-//     {
-//         for (const auto& item : target_state.items())
-//         {
-//             json updated_obj;
-//             std::string state = item.value().dump();
-//             std::cout << "STATE: " << state << std::endl;
-
-//             auto j = json::parse(item.value().dump());
-//             updated_obj["name"] = j["name"];
-//             updated_obj["is_dir"] = j["is_dir"];
-//             if (j["is_dir"] == false)
-//             {
-//                 fstream file;
-//                 file.open(j["full_path"], ios::in | ios::out | ios::binary);
-//                 if (!file.is_open())
-//                 {
-//                     // cout<<"[ERROR] : Cannot read file: " << fname << std::endl;
-//                     exit(EXIT_FAILURE);
-//                 }
-
-//                 // Read file-content and send it to server
-//                 std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-//                 updated_obj["content"] = content;
-//                 file.close();
-//                 std::cout << "Updated object = " << updated_obj.dump() << std::endl;
-//             }
-//             std::string data_sent = updated_obj.dump();
-//             c.send_to(data_sent.c_str(), data_sent.length());
-//         }
-//     }
-//     catch(const std::exception& e)
-//     {
-//         std::cerr << e.what() << std::endl;
-//         return false;
-//     }
-//     return true;
-// }
 
 json monitorDiff(std::string dir_name, const json &cur_state)
 {
@@ -128,137 +86,7 @@ json monitorDiff(std::string dir_name, const json &cur_state)
         std::cerr << e.what() << std::endl;
         return cur_state;
     }
-    
-    // for (const auto& cur : cur_state.items())
-    // {
-    //     update_list[cur.value()["name"]] = operation::ADD;
-    // }
-    // try
-    // {
-    //     if (dropbox::pathExists(file_name))
-    //     {
-    //         std::ifstream f(file_name);
-    //         try
-    //         {
-    //             json last_state = json::parse(f);
-    //             // // Compare and find the latest updates
-    //             // std::cout << "========================================" << std::endl;
-    //             // std::cout << last_state.dump() << std::endl;
-    //             // std::cout << "----------------------------------------" << std::endl;
-    //             // std::cout << cur_state << std::endl << std::endl;
-
-
-    //             for (const auto& cur : cur_state.items())
-    //             {
-    //                 auto i = json::parse(cur.value().dump());
-    //                 bool is_found = false;
-    //                 for (const auto& last : last_state.items())
-    //                 {
-    //                     auto j = json::parse(last.value().dump());
-    //                     if (i["name"] == j["name"])
-    //                     {
-    //                         // Also check the size is same, otherwise
-    //                         // consider the file is modified.
-    //                         if (i["size"] == j["size"])
-    //                         {
-    //                             is_found = true;
-    //                         }
-    //                         break;
-    //                     }
-    //                 }
-    //                 if (is_found)
-    //                 {
-    //                     std::cout << "Match found for file " << i["name"] << std::endl;
-    //                 }
-    //                 else
-    //                 {
-    //                     // Add it to changed dir
-    //                 }
-    //                 std::cout << std::endl;
-    //             }
-    //         }
-    //         catch(const std::exception& e)
-    //         {
-    //             std::cerr << e.what() << std::endl;
-    //         }
-    //         f.close();
-    //     }
-    //     else
-    //     {
-    //         return cur_state;
-    //     }
-    // }
-    // catch(const std::exception& e)
-    // {
-    //     std::cerr << e.what() << std::endl;
-    // }
 }
-
-
-// json monitorDiff(std::string dir_name, const json &cur_state)
-// {
-//     std::string file_name = dir_name + "/status.json";
-
-//     try
-//     {
-//         if (dropbox::pathExists(file_name))
-//         {
-//             std::ifstream f(file_name);
-//             try
-//             {
-//                 json last_state = json::parse(f);
-//                 // // Compare and find the latest updates
-//                 // std::cout << "========================================" << std::endl;
-//                 // std::cout << last_state.dump() << std::endl;
-//                 // std::cout << "----------------------------------------" << std::endl;
-//                 // std::cout << cur_state << std::endl << std::endl;
-
-
-//                 for (const auto& cur : cur_state.items())
-//                 {
-//                     auto i = json::parse(cur.value().dump());
-//                     bool is_found = false;
-//                     for (const auto& last : last_state.items())
-//                     {
-//                         auto j = json::parse(last.value().dump());
-//                         if (i["name"] == j["name"])
-//                         {
-//                             // Also check the size is same, otherwise
-//                             // consider the file is modified.
-//                             if (i["size"] == j["size"])
-//                             {
-//                                 is_found = true;
-//                             }
-//                             break;
-//                         }
-//                     }
-//                     if (is_found)
-//                     {
-//                         std::cout << "Match found for file " << i["name"] << std::endl;
-//                     }
-//                     else
-//                     {
-//                         // Add it to changed dir
-//                     }
-//                     std::cout << std::endl;
-//                 }
-//             }
-//             catch(const std::exception& e)
-//             {
-//                 std::cerr << e.what() << std::endl;
-//             }
-//             f.close();
-//         }
-//         else
-//         {
-//             return cur_state;
-//         }
-//     }
-//     catch(const std::exception& e)
-//     {
-//         std::cerr << e.what() << std::endl;
-//     }
-// }
 
 int main(int argc, char *argv[])
 {

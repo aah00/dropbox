@@ -15,6 +15,7 @@ void ServerSocket::bind_socket()
         exit(EXIT_FAILURE);
     }
     std::cout <<"[LOG] : Bind Successful." << std::endl;
+    
 }
 
 void ServerSocket::set_listen_set()
