@@ -43,17 +43,21 @@ int main(int argc, char *argv[])
                 try
                 {
                     auto j = json::parse(content);
-                    std::string fname = j["name"];
-                    if(j["is_dir"] == false)
+                    for (const auto& cur : j.items())
                     {
-                        std::ofstream outfile ("dest_dir/" + fname);
-                        outfile << j["content"] << std::endl;
-                        outfile.close();
-                    }
-                    else
-                    {
-                        dropbox::createDirectory("dest_dir/" + fname);
-                        std::cout << fname << " is a directory!" << std::endl;
+                        std::cout << "Current key: " << cur.key() << std::endl;
+                        std::string fname = cur.key();
+                        if(cur.value()["is_dir"] == false)
+                        {
+                            std::ofstream outfile ("dest_dir/" + fname);
+                            outfile << cur.value()["content"] << std::endl;
+                            outfile.close();
+                        }
+                        else
+                        {
+                            dropbox::createDirectory("dest_dir/" + fname);
+                            std::cout << fname << " is a directory!" << std::endl;
+                        }
                     }
                 }
                 catch(const std::exception& e)

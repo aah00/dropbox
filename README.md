@@ -28,6 +28,18 @@ receives any change from its client.
   - Check filesize and available disk-space:
     However! You should consider first passing the size of the file, as a good practice. This would allow your client to anticipate exactly how much data is coming through the socket, figure out if (for example) there is enough disk space, etc. It allows you to have some sort of sanity-checking before committing to downloading whatever the server tries to send.
 
+## Limitations
+- Cannot support folder depth more than a single level
+- Cannot support multiple clients 
+- Not suitable for large files
+- Not monitoring the changes on regular interval
+
+
+## Solution
+  - ScanDir -----> DetectChanges -------> SynchronizeDir -------> SaveChanges--
+      -                                                               -
+      -                                                               -
+      -----------------------------------------------------------------
 
 ## Assumption
 - 

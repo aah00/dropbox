@@ -6,12 +6,60 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <fstream>
 
 #define _access access
 #define _rmdir rmdir
 #define MAX_PATH_LENGTH 4096
 
 using json = nlohmann::json;
+
+
+json dropbox::scanDir2(std::string dir_name)
+{
+    DIR *dirp;
+    if ((dirp = opendir(dir_name.c_str())) == NULL) {
+        std::cerr << "couldn't open " << dir_name << std::endl;
+        return false;
+    }
+
+    json obj;
+    struct dirent *dp;
+    auto server_dir = json::array();
+    // do {
+        while((dp = readdir(dirp)) != nullptr)
+        {
+            std::string d_name = dp->d_name;
+            if(d_name != "." && d_name != "..")
+            {
+                json property;
+                struct stat statDat;
+                char full_path[MAX_PATH_LENGTH];
+                sprintf(full_path,"%s/%s/%s", get_current_dir_name(), dir_name.c_str(), d_name.c_str());
+                if (stat(full_path, &statDat) != 0)
+                {
+                    closedir(dirp);
+                    return false;
+                }
+                property["full_path"] = full_path;
+                property["mod_time"] = statDat.st_mtime;
+                property["access_time"] = statDat.st_atime;
+                property["size"] = statDat.st_size;
+                property["is_dir"] = (0 != (statDat.st_mode & 0x4000));
+                property["is_symlink"] = false;
+                obj[d_name] = property;
+                // server_dir.push_back(obj);
+            }
+        }
+    // } while (dp != nullptr);
+
+    closedir(dirp);
+
+    std::cout << "OBJECT = " << obj.dump() << std::endl;
+
+    return obj;
+}
+
 
 json dropbox::scanDir(std::string dir_name)
 {
@@ -141,4 +189,41 @@ bool dropbox::createDirectory(const std::string &path)
 {
     if ( dropbox::pathExists( path ) )	return true;
     return (0 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO));
+}
+
+
+bool dropbox::write(std::string file_name, std::string data)
+{
+    std::ofstream file;
+    try
+    {
+        file.open(file_name);
+        file << data;
+        file.close();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+
+    return true;
+}
+
+bool dropbox::write(std::string file_name, const json& obj)
+{
+    std::ofstream file;
+    try
+    {
+        file.open(file_name);
+        file << obj.dump();
+        file.close();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return false;
+    }
+
+    return true;
 }
